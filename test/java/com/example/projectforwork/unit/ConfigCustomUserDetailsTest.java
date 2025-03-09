@@ -3,6 +3,7 @@ package com.example.projectforwork.unit;
 import com.example.projectforwork.config.CustomUserDetailsService;
 import com.example.projectforwork.config.users_config.Searching;
 import com.example.projectforwork.entity.AbstractUserEntity;
+import com.example.projectforwork.exceptions.UserNotFoundException;
 import com.example.projectforwork.utils.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,5 +44,13 @@ public class ConfigCustomUserDetailsTest {
         UserDetails userDetails =  userDetailsService.loadUserByUsername(username);
         assertEquals(userDetails.getUsername(), username);
         Mockito.verify(searching, times(1)).findUserByMail(username);
+    }
+
+    @Test
+    public void throwExceptionLoadByUsernameTest() {
+        String username = "username";
+        when(searching.findUserByMail(username)).thenThrow(UserNotFoundException.class);
+        Assertions.assertThrows(UserNotFoundException.class,
+                () -> userDetailsService.loadUserByUsername(username));
     }
 }

@@ -31,6 +31,7 @@ public class AbstractUserEntity {
     private LocalDate registrationDate;
     @Enumerated(value = EnumType.STRING)
     private Roles role;
+    private byte[] photo;
     @Builder
     public AbstractUserEntity(String firstName, String secondName, String mail, String password, Roles role) {
         this.firstName = firstName;

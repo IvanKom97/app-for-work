@@ -28,7 +28,11 @@ public class JwtFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
-        excludeSwaggerPath(request, response, filterChain);
+        String requestURI = request.getRequestURI();
+        if (EXCLUDED_PATHS.stream().anyMatch(requestURI::startsWith)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         Optional.ofNullable(request.getHeader("Authorization"))
                 .filter(header -> header.startsWith("Bearer "))
@@ -43,14 +47,5 @@ public class JwtFilter extends OncePerRequestFilter {
                 });
 
         filterChain.doFilter(request, response);
-    }
-
-    private void excludeSwaggerPath(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
-        String requestURI = request.getRequestURI();
-        if (EXCLUDED_PATHS.stream().anyMatch(requestURI::startsWith)) {
-            filterChain.doFilter(request, response);
-        }
     }
 }

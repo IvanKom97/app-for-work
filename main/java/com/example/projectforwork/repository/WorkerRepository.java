@@ -11,7 +11,6 @@ import java.util.UUID;
 
 
 public interface WorkerRepository extends JpaRepository<WorkerEntity, UUID> {
-
     @Query(value = "from WorkerEntity w where w.mail=:mail")
     Optional<WorkerEntity> findWorkerByEmail(@Param("mail") String mail);
 }

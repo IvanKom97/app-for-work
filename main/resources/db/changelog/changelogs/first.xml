@@ -13,7 +13,8 @@
                                   mail varchar(127) not null unique ,
                                   password varchar(127) not null ,
                                   registration_date date,
-                                  role varchar(127)
+                                  role varchar(127) ,
+                                  photo bytea
             )
         </sql>
         <sql>
@@ -24,7 +25,9 @@
                                    mail varchar(127) not null unique ,
                                    password varchar(127) not null ,
                                    registration_date date ,
-                                   role varchar(127)
+                                   role varchar(127),
+                                   photo bytea
+
             )
         </sql>
         <sql>
@@ -35,7 +38,9 @@
                                    mail varchar(127) not null unique ,
                                    password varchar(127) not null ,
                                    registration_date date,
-                                   role varchar(127)
+                                   role varchar(127),
+                                   photo bytea
+
             )
         </sql>
         <sql>
@@ -44,9 +49,22 @@
                                    descriptions varchar(127) not null ,
                                    priorities varchar(127) default 'MIDDLE',
                                    publication_date date,
+                                   in_process_since_date date,
                                    user_id uuid references users(id),
-                                   worker_id uuid references workers(id)
+                                   worker_id uuid references workers(id),
+                                   order_status varchar(127)
             )
+        </sql>
+        <sql>
+            create table comments
+            (
+                id               bigserial primary key,
+                comment          varchar(127) not null,
+                post_date        date,
+                commentator_name varchar(127) not null,
+                commentator_role varchar(127) not null,
+                order_id         uuid         not null
+            );
         </sql>
     </changeSet>
 </databaseChangeLog>

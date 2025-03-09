@@ -56,6 +56,7 @@ public class Config {
                 .authorizeHttpRequests(request ->
                         request.requestMatchers("/v3/api-docs/**", "/swagger-ui.html","/swagger-ui/**" ,"/swagger-resources/**", "/webjars/**").permitAll().
                                 requestMatchers("/user-service/**").hasRole(Roles.USER.name())
+                                .requestMatchers("/order-service/**").authenticated()
                                 .requestMatchers("/admin-service/**").hasRole(Roles.ADMIN.name())
                                 .requestMatchers("/employee-service/**").hasRole(Roles.WORKER.name())
                                 .requestMatchers("/registration/**").permitAll()
