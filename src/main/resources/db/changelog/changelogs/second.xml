@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet id="2" author="Komov">
+        <sql>
+            alter table orders
+            drop column descriptions
+        </sql>
+        <sql>
+            alter table orders
+            add column type_repairs varchar(127)
+        </sql>
+        <sql>
+            alter table orders
+                add column option_work varchar(127)
+        </sql>
+        <sql>
+            alter table orders
+                alter column user_id set not null
+        </sql>
+        <sql>
+            alter table orders
+             add column price int not null default 0
+        </sql>
+        <sql>
+            alter table workers
+                add column work_type varchar (127) not null
+        </sql>
+    </changeSet>
+</databaseChangeLog>
