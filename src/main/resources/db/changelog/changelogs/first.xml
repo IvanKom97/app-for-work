@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet id="1" author="Komov">
+        <sql>
+            create table users(
+                                  id uuid primary key ,
+                                  first_name varchar(127) not null ,
+                                  second_name varchar(127) not null,
+                                  mail varchar(127) not null unique ,
+                                  password varchar(127) not null ,
+                                  registration_date date,
+                                  role varchar(127) ,
+                                  photo bytea
+            )
+        </sql>
+        <sql>
+            create table admins(
+                                   id uuid primary key ,
+                                   first_name varchar(127) not null ,
+                                   second_name varchar(127) not null,
+                                   mail varchar(127) not null unique ,
+                                   password varchar(127) not null ,
+                                   registration_date date ,
+                                   role varchar(127),
+                                   photo bytea
+
+            )
+        </sql>
+        <sql>
+            create table workers(
+                                   id uuid primary key ,
+                                   first_name varchar(127) not null ,
+                                   second_name varchar(127) not null,
+                                   mail varchar(127) not null unique ,
+                                   password varchar(127) not null ,
+                                   registration_date date,
+                                   role varchar(127),
+                                   photo bytea
+
+            )
+        </sql>
+        <sql>
+            create table orders(
+                                   id uuid primary key ,
+                                   descriptions varchar(127) not null ,
+                                   priorities varchar(127) default 'MIDDLE',
+                                   publication_date date,
+                                   in_process_since_date date,
+                                   user_id uuid references users(id),
+                                   worker_id uuid references workers(id),
+                                   order_status varchar(127)
+            )
+        </sql>
+        <sql>
+            create table comments
+            (
+                id               UUID primary key,
+                comment          varchar(127) not null,
+                post_date        varchar(127),
+                order_id UUID references orders(id),
+                commentator_mail varchar(127),
+                commentator_role varchar(127)
+            );
+        </sql>
+    </changeSet>
+</databaseChangeLog>
