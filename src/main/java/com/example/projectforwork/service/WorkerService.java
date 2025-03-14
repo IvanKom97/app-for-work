@@ -15,9 +15,11 @@ import com.example.projectforwork.mappers.WorkerMapper;
 import com.example.projectforwork.repository.CommentRepository;
 import com.example.projectforwork.repository.OrderRepository;
 import com.example.projectforwork.repository.WorkerRepository;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.security.core.Authentication;
@@ -56,6 +58,13 @@ public class WorkerService {
     public void takeOrder(Authentication authentication, UUID idOrder) {
         WorkerEntity worker = workerRepository.findWorkerByEmail(authentication.getName()).orElseThrow(WorkerNotFoundException::new);
         OrderEntity order = orderRepository.findById(idOrder).orElseThrow(OrderNotFoundException::new);
+        assignWorker(order, worker);
+    }
+
+    private void assignWorker(OrderEntity order, WorkerEntity worker) {
+        if(order.getOrderStatus().equals(OrderStatus.IN_PROCESS) || order.getOrderStatus().equals(OrderStatus.COMPLETED)){
+            throw new OrderNotFoundException();
+        }
         order.setWorker(worker);
         order.setOrderStatus(OrderStatus.IN_PROCESS);
         order.setInProcessSinceDate(LocalDate.now());
@@ -76,25 +85,35 @@ public class WorkerService {
                                          UUID orderId) {
         WorkerEntity worker = workerRepository.findWorkerByEmail(authentication.getName()).orElseThrow(WorkerNotFoundException::new);
         OrderEntity order = orderRepository.findById(orderId).orElseThrow(OrderNotFoundException::new);
-        checkId(order, worker.getId());
+        refuseFromOrder(order, worker.getId());
+    }
+
+    private void refuseFromOrder(OrderEntity order, UUID workerID) {
+        checkId(order, workerID);
         order.setInProcessSinceDate(null);
         order.setOrderStatus(OrderStatus.NOT_STARTED);
         order.setWorker(null);
     }
 
+    @Transactional(readOnly = true)
+    public byte[] getAvatar(Authentication authentication) {
+        return workerRepository.findWorkerByEmail(authentication.getName()).orElseThrow(WorkerNotFoundException::new).getPhoto();
+    }
+
     @Transactional()
     public void leaveCommentForOrder(Authentication authentication, UUID orderId, String comment) {
+
         WorkerEntity worker = workerRepository.findWorkerByEmail(authentication.getName()).orElseThrow(WorkerNotFoundException::new);
         OrderEntity order = orderRepository.findById(orderId).orElseThrow(OrderNotFoundException::new);
         CommentEntity commentEntity = CommentMapper.createCommentEntity(worker, order, comment);
         commentRepository.save(commentEntity);
     }
-    @Transactional
-    public List<CommentDto> getAllCommentsByOrderId(PageWithIdOrderDto orderDto) {
-        PageRequest pageRequest = PageRequest.of(orderDto.getPage() - 1, orderDto.getCount());
-        Page<CommentEntity> commentEntities = commentRepository.getByOrder_Id(orderDto.getOrderId(), pageRequest);
-        return CommentMapper.fromCommentEntityPageToCommentDtoList(commentEntities);
-    }
+   @Transactional
+    public List<CommentDto> getAllCommentsByOrderId(UUID orderId, int page, int count) {
+        PageRequest pageRequest = PageRequest.of(page - 1, count, Sort.by("id").descending());
+       Page<CommentEntity> commentEntities = commentRepository.getByOrderId(orderId, pageRequest);
+       return CommentMapper.fromCommentEntityPageToCommentDtoList(commentEntities);
+   }
 
     private void check(int page) {
         if (page == 0) {

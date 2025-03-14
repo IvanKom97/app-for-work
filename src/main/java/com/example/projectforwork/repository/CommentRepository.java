@@ -9,5 +9,5 @@ import java.util.UUID;
 
 public interface CommentRepository extends JpaRepository<CommentEntity, UUID> {
 
-    Page<CommentEntity> getByOrder_Id(UUID orderId, Pageable pageable);
+    Page<CommentEntity> getByOrderId(UUID orderId, Pageable pageable);
 }

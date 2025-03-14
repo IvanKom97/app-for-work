@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 public class WorkTypeValidator implements ConstraintValidator<ValidWorkTypeForCategory, OrderDto> {
     @Override
     public boolean isValid(OrderDto orderDto, ConstraintValidatorContext constraintValidatorContext) {
-        System.out.println("1111111111111111");
         if (orderDto.getTypesRepairs() == null || orderDto.getOption() == null) {
             return false;
         }

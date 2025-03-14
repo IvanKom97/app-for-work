@@ -34,5 +34,5 @@ public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
     int deleteOrderByUser(@Param("mail") String mail,
                                              @Param("orderId") UUID orderId);
 
-    Page<OrderEntity> findAllByUserMail(String username, Pageable pageable);
+    Page<OrderEntity> findAllByUserId(UUID id,  Pageable pageable);
 }

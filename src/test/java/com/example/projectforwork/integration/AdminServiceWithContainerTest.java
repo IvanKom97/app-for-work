@@ -2,7 +2,6 @@ package com.example.projectforwork.integration;
 
 import com.example.projectforwork.dto.AdminDto;
 import com.example.projectforwork.dto.OrderMasterDto;
-import com.example.projectforwork.dto.PageDto;
 import com.example.projectforwork.dto.UserDtoForAdmin;
 import com.example.projectforwork.entity.AdminEntity;
 import com.example.projectforwork.entity.OrderEntity;
@@ -67,7 +66,7 @@ public class AdminServiceWithContainerTest extends AbstractTestContainer {
     public void deleteOrderExceptionTest() {
         UUID id = UUID.randomUUID();
         assertThrows(OrderNotFoundException.class,
-                () -> adminService.deleteOrder(id));
+                () -> adminService.deleteOrderById(id));
     }
 
     @Test
@@ -76,7 +75,7 @@ public class AdminServiceWithContainerTest extends AbstractTestContainer {
         userRepository.save(user);
         OrderEntity order = TestUtils.orderEntity(user);
         orderRepository.save(order);
-        adminService.deleteOrder(order.getId());
+        adminService.deleteOrderById(order.getId());
         assertEquals(orderRepository.findAll().size(), 0);
     }
 
@@ -92,7 +91,6 @@ public class AdminServiceWithContainerTest extends AbstractTestContainer {
         workerRepository.save(worker);
         userRepository.save(user);
         orderRepository.save(order);
-        System.out.println(order.getId());
         OrderMasterDto orderMasterDto = TestUtils.orderMasterDto(worker.getMail(), order.getId());
         adminService.setNewMaster(orderMasterDto);
         assertEquals(order.getWorker(), worker);
@@ -102,10 +100,8 @@ public class AdminServiceWithContainerTest extends AbstractTestContainer {
     @Test
     void getAllByUserMailPageTest() {
         UserEntity user = SaveUtilsTest.saveUser(userRepository);
-        String username = user.getMail();
         SaveUtilsTest.saveOrder(orderRepository, 10, user);
-        PageDto pageDto = new PageDto(username, 1, 5);
-        UserDtoForAdmin userDtoForAdmin = adminService.getInfoAboutOrdersOfUserByPages(pageDto);
+        UserDtoForAdmin userDtoForAdmin = adminService.getAllOrdersOfSomeUser(user.getId(), 1, 5);
         assertEquals(userDtoForAdmin.getOrders().size(), 5);
         assertEquals(userDtoForAdmin.getMail(), user.getMail());
 

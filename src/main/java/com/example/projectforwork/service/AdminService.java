@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.security.core.Authentication;
@@ -49,8 +50,8 @@ public class AdminService {
         } else throw new ForrbidenByCompanyException();
     }
 
-    @Transactional()
-    public void deleteOrder(UUID id) {
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public void deleteOrderById(UUID id) {
         OrderEntity order = orderRepository.findById(id).orElseThrow(OrderNotFoundException::new);
         orderRepository.delete(order);
         //сделал через поиск,
@@ -87,7 +88,7 @@ public class AdminService {
     @Transactional(readOnly = true)
     public List<FullOrderDto> getInfoAboutOrdersPages(int page, int requestedCount) {
         checkPage(page);
-        PageRequest pageRequest = PageRequest.of(page - 1, requestedCount);
+        PageRequest pageRequest = PageRequest.of(page - 1, requestedCount, Sort.by("id").descending());
         return orderRepository.findAll(pageRequest)
                 .map(OrderMapper::fromEntityToFullOrderDto)
                 .stream()
@@ -101,17 +102,17 @@ public class AdminService {
     }
 
     @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public void setNewPriority(OrderIdPriorityDto idPriorityDto) {
-        OrderEntity order = orderRepository.findById(idPriorityDto.getOrderId()).orElseThrow(OrderNotFoundException::new);
-        order.setPriorities(idPriorityDto.getPriorities());
+    public void setNewPriority(UUID orderId, Priorities priorities) {
+        OrderEntity order = orderRepository.findById(orderId).orElseThrow(OrderNotFoundException::new);
+        order.setPriorities(priorities);
     }
 
     @Transactional(readOnly = true)
-    public UserDtoForAdmin getInfoAboutOrdersOfUserByPages(PageDto pageDto) {
-        checkPage(pageDto);
-        UserEntity user = userRepository.findUserByEmail(pageDto.getMail()).orElseThrow(UserNotFoundException::new);
-        PageRequest pageRequest = PageRequest.of(pageDto.getPage() - 1, pageDto.getRequestedCount());
-        List<OrderDtoForAdmin> list = OrderMapper.fromPageToListOrderDtoForAdmin(orderRepository.findAllByUserMail(pageDto.getMail(), pageRequest));
+    public UserDtoForAdmin getAllOrdersOfSomeUser(UUID userId, int page, int count) {
+        checkPage(page);
+        UserEntity user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+        PageRequest pageRequest = PageRequest.of(page - 1, count, Sort.by("id").descending());
+        List<OrderDtoForAdmin> list = OrderMapper.fromPageToListOrderDtoForAdmin(orderRepository.findAllByUserId(userId, pageRequest));
         return UserMapper.fromEntityToUserDtoForMapper(user, list);
     }
     @Transactional
@@ -122,27 +123,22 @@ public class AdminService {
         commentRepository.save(com);
     }
 
-    @Transactional
-    public List<CommentDto> getAllCommentsByOrderId(PageWithIdOrderDto orderDto) {
-        checkPage(orderDto.getPage());
-        PageRequest pageRequest = PageRequest.of(orderDto.getPage() - 1, orderDto.getCount());
-        Page<CommentEntity> commentEntities = commentRepository.getByOrder_Id(orderDto.getOrderId(), pageRequest);
+    @Transactional(readOnly = true)
+    public List<CommentDto> getAllCommentsByOrderId(UUID orderId, int page, int count) {
+        checkPage(page);
+        PageRequest pageRequest = PageRequest.of(page - 1, count, Sort.by("id").descending());
+        OrderEntity order = orderRepository.findById(orderId).orElseThrow(OrderNotFoundException::new);
+        Page<CommentEntity> commentEntities = commentRepository.getByOrderId(orderId, pageRequest);
         return CommentMapper.fromCommentEntityPageToCommentDtoList(commentEntities);
     }
 
     @Transactional
-    public void createNewOrderForUser(UserForCreatingOrderDto dto) {
+    public void createNewOrderForExistingUser(UserForCreatingOrderDto dto) {
         UserEntity user = userRepository.findUserByEmail(dto.getMail()).orElseThrow(UserNotFoundException::new);
         OrderEntity order = OrderMapper.fromOrderDtoToOrderEntity(dto.getOrderDto(), user);
         orderRepository.save(order);
     }
 
-    private void checkPage(PageDto pageDto) {
-        if (pageDto.getPage() == 0) {
-            System.out.println("uuu");
-            throw new PageCantBeZeroException();
-        }
-    }
 
     private void checkPage(int page) {
         if (page == 0) {
