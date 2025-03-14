@@ -11,5 +11,4 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ValidWorkTypeForCategory {
     String message() default "РАБОТА НЕ ОТНОСИТСЯ К ДАННОЙ КАТЕГОРИИ";
-
 }

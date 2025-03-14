@@ -6,6 +6,10 @@ import com.example.projectforwork.dto.WorkerDto;
 import com.example.projectforwork.service.AdminService;
 import com.example.projectforwork.service.UserService;
 import com.example.projectforwork.service.WorkerService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,19 +26,26 @@ public class RegistrationController {
     private final WorkerService workerService;
     private final AdminService adminService;
 
-    @PostMapping("/new-user")
+    @Operation(summary = "Регистрация нового юзера")
+    @ApiResponse(responseCode = "200",
+    content = @Content(schema = @Schema(implementation = UserDtoForRegistration.class)))
+    @PostMapping("/users")
     public ResponseEntity<String> registrationUser(@Valid @RequestBody UserDtoForRegistration info) {
         userService.postNewUser(info);
         return ResponseEntity.ok("Registration is done");
     }
 
-    @PostMapping("/new-worker")
+    @Operation(summary = "Регистрация нового работника")
+    @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = WorkerDto.class)))
+    @PostMapping("/workers")
     public ResponseEntity<String> registrationNewWorker(@RequestBody @Valid WorkerDto workerDto) {
         workerService.postNewWorker(workerDto);
         return ResponseEntity.ok("registration is done");
     }
 
-    @PostMapping("/new-admin")
+    @Operation(summary = "Регистрация нового админа")
+    @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = AdminDto.class)))
+    @PostMapping("/admins")
     public ResponseEntity<String> registrationAdmin(@RequestBody @Valid AdminDto adminDto) {
         adminService.adminRegistration(adminDto);
         return ResponseEntity.ok("Registration is done");
